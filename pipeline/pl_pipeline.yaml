@@ -1,0 +1,191 @@
+# PIPELINE DEFINITION
+# Name: premier-league-ml-pipeline
+# Description: A simple pipeline to automate a machine learning workflow to create pl model
+components:
+  comp-load-data:
+    executorLabel: exec-load-data
+  comp-process-data:
+    executorLabel: exec-process-data
+  comp-train-data:
+    executorLabel: exec-train-data
+deploymentSpec:
+  executors:
+    exec-load-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - load_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' &&\
+          \ \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef load_data():\n    import pandas as pd\n    import minio\n   \
+          \ import io\n\n    minio_client = Minio(\n        'host.docker.internal:9000',\n\
+          \        \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
+          ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
+          \    thedataset = 'premier-league-tables.csv'\n\n    try:\n        res =\
+          \ minio_client.get_object(bucket_name, thedataset)\n\n    except ResponseError\
+          \ as err:\n        print(err)\n\n    teams = pd.read_csv(io.BytesIO(res.data))\n\
+          \    data = pd.DataFrame(teams)\n\n    encodeddata = data.to_csv(index=False).encode(\"\
+          utf-8\")\n\n    try:\n        if not minio_client.bucket_exists(bucket_name):\n\
+          \            minio_client.make_bucket(bucket_name)\n        minio_client.put_object(\n\
+          \                bucket_name,\n                'data.csv',\n           \
+          \     data=io.BytesIO(encodeddata),\n                length=len(encodeddata),\n\
+          \                content_type='application/csv'\n                )\n   \
+          \ except ResponseError as err:\n        print(err)\n\n"
+        image: python:3.9
+    exec-process-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - process_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'scikit-learn'\
+          \ && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef process_data():\n    import pandas as pd\n    from sklearn.model_selection\
+          \ import train_test_split\n    import minio\n    import io\n\n    minio_client\
+          \ = Minio(\n        'host.docker.internal:9000',\n        \"01UEi1KBqoAFeN3ANxIK\"\
+          ,\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\",\n        secure=False\n\
+          \        )\n\n    bucket_name = 'premier-league'\n    try:\n        res\
+          \ = minio_client.get_object(bucket_name, 'data.csv')\n\n    except ResponseError\
+          \ as err:\n        print(err)\n\n    data = pd.read_csv(io.BytesIO(response.data))\n\
+          \    data = data.DataFrame(data)\n\n    del data[\"Notes\"]\n\n    def add_new_col(row):\n\
+          \        if row['Rk'] == 1:\n            return 1\n        else:\n     \
+          \       return 0\n\n    data['Won_League'] = data.apply(add_new_col, axis=1)\n\
+          \    X = data[['W', 'D', 'GD']]\n    y = data['Won_League']\n\n    X_train,\
+          \ X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)\n\
+          \n    X_train_bytes = X_train.to_csv(index=False).encode(\"utf-8\")\n  \
+          \  X_test_bytes = X_test.to_csv(index=False).encode(\"utf-8\")\n    y_train_bytes\
+          \ = y_train.to_csv(index=False).encode(\"utf-8\")\n    y_test_bytes = X_test.to_csv(index=False).encode(\"\
+          utf-8\")\n\n    try:\n        if not minio_client.bucket_exists(bucket_name):\n\
+          \            minio_client.make_bucket(bucket_name)\n        minio_client.put_object(\n\
+          \                bucket_name,\n                'X-train.csv',\n        \
+          \        data=io.BytesIO(X_train_bytes),\n                length=len(X_train_bytes),\n\
+          \                content_type = \"application/csv\"\n                )\n\
+          \        minio_client.put_object(\n                bucket_name,\n      \
+          \          'X-test.csv',\n                data=io.BytesIO(X_test_bytes),\n\
+          \                length=len(X_test_bytes),\n                content_type\
+          \ = \"application/csv\"\n                )\n        minio_client.put_object(\n\
+          \                bucket_name,\n                'y-train.csv',\n        \
+          \        data=io.BytesIO(y_train_bytes),\n                length=len(y_train_bytes),\n\
+          \                content_type = \"application/csv\"\n                )\n\
+          \        minio_client.put_object(\n                bucket_name,\n      \
+          \          'y-test.csv',\n                data=io.BytesIO(y_test_bytes),\n\
+          \                length=len(y_test_bytes),\n                content_type\
+          \ = \"application/csv\"\n                )\n\n    except ResponseError as\
+          \ err:\n        print(err)\n\n"
+        image: python:3.9
+    exec-train-data:
+      container:
+        args:
+        - --executor_input
+        - '{{$}}'
+        - --function_to_execute
+        - train_data
+        command:
+        - sh
+        - -c
+        - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
+          \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
+          \  python3 -m pip install --quiet --no-warn-script-location 'scikit-learn'\
+          \ 'pandas' 'tempfile' && \"$0\" \"$@\"\n"
+        - sh
+        - -ec
+        - 'program_path=$(mktemp -d)
+
+
+          printf "%s" "$0" > "$program_path/ephemeral_component.py"
+
+          _KFP_RUNTIME=true python3 -m kfp.dsl.executor_main                         --component_module_path                         "$program_path/ephemeral_component.py"                         "$@"
+
+          '
+        - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
+          \ *\n\ndef train_data():\n    import pandas as pd\n    from sklearn.linear_model\
+          \ import LogisticRegression\n    import pickle\n    import tempfile\n\n\
+          \    minio_client = Minio(\n        'host.docker.internal:9000',\n     \
+          \   \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
+          ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
+          \    try:\n        res_for_X = minio_client.get_object(bucket_name, 'X-train.csv')\n\
+          \        res_for_y = minio_client.get_object(bucket_name, 'y-train.csv')\n\
+          \n    except ResponseError as err:\n        print(err)\n\n    X_train =\
+          \ pd.read_csv(io.BytesIO(res_for_X.data))\n    y_train = pd.read_csv(io.BytesIO(res_for_y.data))\n\
+          \n    X_train = pd.DataFrame(X_train)\n    y_train = pd.DataFrame(y_train)\n\
+          \n    model = LogisticRegression()\n    model.fit(X_train, y_train)\n\n\
+          \    try:\n\n        with tempfile.TemporaryFile() as f:\n            pickle.dump(model,\
+          \ f)\n            f.seek(0)\n            minio_client.put_object(Body=f.read(),\
+          \ bucket=bucket_name, key='model.pkl')\n    except Exception as e:\n   \
+          \     print(e)\n\n"
+        image: python:3.9
+pipelineInfo:
+  description: A simple pipeline to automate a machine learning workflow to create
+    pl model
+  name: premier-league-ml-pipeline
+root:
+  dag:
+    tasks:
+      load-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-load-data
+        taskInfo:
+          name: load-data
+      process-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-process-data
+        dependentTasks:
+        - load-data
+        taskInfo:
+          name: process-data
+      train-data:
+        cachingOptions:
+          enableCache: true
+        componentRef:
+          name: comp-train-data
+        dependentTasks:
+        - process-data
+        taskInfo:
+          name: train-data
+schemaVersion: 2.1.0
+sdkVersion: kfp-2.7.0
