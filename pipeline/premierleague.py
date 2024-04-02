@@ -2,8 +2,8 @@ from kfp.dsl import component, pipeline
 import kfp
 
 @component(
-        packages_to_install=["pandas", "minio"],
-        base_image="python:3.9"
+        packages_to_install=["pandas", "minio", "kfp"],
+        base_image="python:3.11.8-alpine"
         )
 def load_data():
     import pandas as pd
@@ -11,7 +11,7 @@ def load_data():
     import io
 
     minio_client = Minio(
-        'host.docker.internal:9000',
+        "192.168.1.95:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
@@ -23,7 +23,7 @@ def load_data():
     try:
         res = minio_client.get_object(bucket_name, thedataset)
 
-    except ResponseError as err:
+    except Exception as err:
         print(err)
 
     teams = pd.read_csv(io.BytesIO(res.data))
@@ -41,12 +41,12 @@ def load_data():
                 length=len(encodeddata),
                 content_type='application/csv'
                 )
-    except ResponseError as err:
+    except Exception as err:
         print(err)
 
 @component(
-        packages_to_install=["pandas", "scikit-learn", "minio"],
-        base_image="python:3.9"
+        packages_to_install=["pandas", "scikit-learn", "minio", "kfp", "numpy"],
+        base_image="python:3.11.8-alpine"
         )
 def process_data():
     import pandas as pd
@@ -55,7 +55,7 @@ def process_data():
     import io
 
     minio_client = Minio(
-        'host.docker.internal:9000',
+        "192.168.1.95:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
@@ -65,10 +65,10 @@ def process_data():
     try:
         res = minio_client.get_object(bucket_name, 'data.csv')
 
-    except ResponseError as err:
+    except Exception as err:
         print(err)
     
-    data = pd.read_csv(io.BytesIO(response.data))
+    data = pd.read_csv(io.BytesIO(res.data))
     data = data.DataFrame(data)
 
     del data["Notes"]
@@ -122,13 +122,13 @@ def process_data():
                 content_type = "application/csv"
                 )
 
-    except ResponseError as err:
+    except Exception as err:
         print(err)
 
 
 @component(
-        packages_to_install=["scikit-learn", "pandas", "tempfile"],
-        base_image="python:3.9"
+        packages_to_install=["scikit-learn", "pandas", "tempfile", "minio", "kfp", "numpy"],
+        base_image="python:3.11.8-alpine"
         )
 def train_data():
     import pandas as pd
@@ -138,7 +138,7 @@ def train_data():
     from minio import Minio
 
     minio_client = Minio(
-        'host.docker.internal:9000',
+        "192.168.1.95:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
@@ -149,7 +149,7 @@ def train_data():
         res_for_X = minio_client.get_object(bucket_name, 'X-train.csv')
         res_for_y = minio_client.get_object(bucket_name, 'y-train.csv')
 
-    except ResponseError as err:
+    except Exception as err:
         print(err)
 
     X_train = pd.read_csv(io.BytesIO(res_for_X.data))
