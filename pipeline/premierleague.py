@@ -2,12 +2,12 @@ from kfp.dsl import component, pipeline
 import kfp
 
 @component(
-        packages_to_install=["pandas"],
+        packages_to_install=["pandas", "minio"],
         base_image="python:3.9"
         )
 def load_data():
     import pandas as pd
-    import minio
+    from minio import Minio
     import io
 
     minio_client = Minio(
@@ -45,13 +45,13 @@ def load_data():
         print(err)
 
 @component(
-        packages_to_install=["pandas", "scikit-learn"],
+        packages_to_install=["pandas", "scikit-learn", "minio"],
         base_image="python:3.9"
         )
 def process_data():
     import pandas as pd
     from sklearn.model_selection import train_test_split
-    import minio
+    from minio import Minio
     import io
 
     minio_client = Minio(
@@ -135,6 +135,7 @@ def train_data():
     from sklearn.linear_model import LogisticRegression
     import pickle
     import tempfile
+    from minio import Minio
 
     minio_client = Minio(
         'host.docker.internal:9000',

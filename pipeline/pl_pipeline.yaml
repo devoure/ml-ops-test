@@ -24,8 +24,8 @@ deploymentSpec:
           \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
           \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
           \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
-          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' &&\
-          \ \"$0\" \"$@\"\n"
+          \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'minio'\
+          \ && \"$0\" \"$@\"\n"
         - sh
         - -ec
         - 'program_path=$(mktemp -d)
@@ -37,8 +37,8 @@ deploymentSpec:
 
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
-          \ *\n\ndef load_data():\n    import pandas as pd\n    import minio\n   \
-          \ import io\n\n    minio_client = Minio(\n        'host.docker.internal:9000',\n\
+          \ *\n\ndef load_data():\n    import pandas as pd\n    from minio import\
+          \ Minio\n    import io\n\n    minio_client = Minio(\n        'host.docker.internal:9000',\n\
           \        \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
           ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
           \    thedataset = 'premier-league-tables.csv'\n\n    try:\n        res =\
@@ -67,7 +67,7 @@ deploymentSpec:
           \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
           \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"'  &&\
           \  python3 -m pip install --quiet --no-warn-script-location 'pandas' 'scikit-learn'\
-          \ && \"$0\" \"$@\"\n"
+          \ 'minio' && \"$0\" \"$@\"\n"
         - sh
         - -ec
         - 'program_path=$(mktemp -d)
@@ -80,12 +80,12 @@ deploymentSpec:
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
           \ *\n\ndef process_data():\n    import pandas as pd\n    from sklearn.model_selection\
-          \ import train_test_split\n    import minio\n    import io\n\n    minio_client\
-          \ = Minio(\n        'host.docker.internal:9000',\n        \"01UEi1KBqoAFeN3ANxIK\"\
-          ,\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\",\n        secure=False\n\
-          \        )\n\n    bucket_name = 'premier-league'\n    try:\n        res\
-          \ = minio_client.get_object(bucket_name, 'data.csv')\n\n    except ResponseError\
-          \ as err:\n        print(err)\n\n    data = pd.read_csv(io.BytesIO(response.data))\n\
+          \ import train_test_split\n    from minio import Minio\n    import io\n\n\
+          \    minio_client = Minio(\n        'host.docker.internal:9000',\n     \
+          \   \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
+          ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
+          \    try:\n        res = minio_client.get_object(bucket_name, 'data.csv')\n\
+          \n    except ResponseError as err:\n        print(err)\n\n    data = pd.read_csv(io.BytesIO(response.data))\n\
           \    data = data.DataFrame(data)\n\n    del data[\"Notes\"]\n\n    def add_new_col(row):\n\
           \        if row['Rk'] == 1:\n            return 1\n        else:\n     \
           \       return 0\n\n    data['Won_League'] = data.apply(add_new_col, axis=1)\n\
@@ -140,9 +140,9 @@ deploymentSpec:
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
           \ *\n\ndef train_data():\n    import pandas as pd\n    from sklearn.linear_model\
-          \ import LogisticRegression\n    import pickle\n    import tempfile\n\n\
-          \    minio_client = Minio(\n        'host.docker.internal:9000',\n     \
-          \   \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
+          \ import LogisticRegression\n    import pickle\n    import tempfile\n  \
+          \  from minio import Minio\n\n    minio_client = Minio(\n        'host.docker.internal:9000',\n\
+          \        \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
           ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
           \    try:\n        res_for_X = minio_client.get_object(bucket_name, 'X-train.csv')\n\
           \        res_for_y = minio_client.get_object(bucket_name, 'y-train.csv')\n\
