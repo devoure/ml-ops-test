@@ -68,7 +68,7 @@ def process_data():
         print(err)
     
     data = pd.read_csv(io.BytesIO(res.data))
-    data = data.DataFrame(data)
+    data = pd.DataFrame(data)
 
     del data["Notes"]
 

@@ -83,7 +83,7 @@ deploymentSpec:
           \        )\n\n    bucket_name = 'premier-league'\n    try:\n        res\
           \ = minio_client.get_object(bucket_name, 'data.csv')\n\n    except Exception\
           \ as err:\n        print(err)\n\n    data = pd.read_csv(io.BytesIO(res.data))\n\
-          \    data = data.DataFrame(data)\n\n    del data[\"Notes\"]\n\n    def add_new_col(row):\n\
+          \    data = pd.DataFrame(data)\n\n    del data[\"Notes\"]\n\n    def add_new_col(row):\n\
           \        if row['Rk'] == 1:\n            return 1\n        else:\n     \
           \       return 0\n\n    data['Won_League'] = data.apply(add_new_col, axis=1)\n\
           \    X = data[['W', 'D', 'GD']]\n    y = data['Won_League']\n\n    X_train,\
