@@ -1,12 +1,11 @@
 # Use an official Python runtime as a parent image
-FROM python:3.11.8-alpine
+FROM python:3.9-slim
 
 # Set environment variables
 # ENV PYTHONDONTWRITEBYTECODE 1
 # ENV PYTHONUNBUFFERED 1
 COPY ./requirements.txt /requirements.txt
 # Install GCC
-RUN apk add --update --no-cache --virtual gcc
 # Set the working directory in the container
 # WORKDIR /app
 
