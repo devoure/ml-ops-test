@@ -2,8 +2,7 @@ from kfp.dsl import component, pipeline
 import kfp
 
 @component(
-        packages_to_install=["pandas", "minio", "kfp"],
-        base_image="python:3.11.8-alpine"
+        base_image="devourey/scikit-sandbox:latest"
         )
 def load_data():
     import pandas as pd
@@ -132,8 +131,8 @@ def train_data():
     import pandas as pd
     from sklearn.linear_model import LogisticRegression
     import pickle
-    import tempfile
     from minio import Minio
+    import io
 
     minio_client = Minio(
         "192.168.1.29:9000",
@@ -160,11 +159,13 @@ def train_data():
     model.fit(X_train, y_train)
 
     try:
-
-        with tempfile.TemporaryFile() as f:
-            pickle.dump(model, f)
-            f.seek(0)
-            minio_client.put_object(Body=f.read(), bucket=bucket_name, key='model.pkl')
+        bytes_file = pickle.dumps(model)
+        minio_client.put_object(
+            bucket_name=bucket_name,
+            object_name='model.pkl',
+            data=io.BytesIO(bytes_file),
+            length=len(bytes_file)
+        )
     except Exception as e:
         print(e)
 

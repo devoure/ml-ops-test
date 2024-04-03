@@ -1,0 +1,104 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,500&family=Roboto:ital,wght@0,100;0,300;0,400;0,500;0,700;0,900;1,100;1,300;1,400;1,500;1,700;1,900&display=swap');
+
+*{ 
+   margin:0;
+   padding: 0;
+   box-sizing: border-box;
+   font-family: "Roboto", sans-serif;
+}
+.ml{
+  width: 100vw;
+  height: 100vh;
+  display:flex;
+  flex-direction: column;
+  justify-content: space-between
+}
+.content{
+  width: 100%;
+  height: 400px;
+  background-color: black;
+  position:relative;
+}
+.content img{
+  object-position: center;
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  opacity: .2;
+}
+.pred{
+  position: absolute;
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly;
+  width: 400px;
+  height:300px;
+  background-color: white;
+  border-radius: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 50%;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19)
+}
+.field{
+  display:flex;
+  flex-direction: column;
+}
+.field-cover{
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+}
+.inputs{
+  width: 80%;
+  height:80%;
+  display:flex;
+  flex-direction: column;
+  align-items:center;
+  justify-content: space-between;
+}
+.field img{
+  width:50px;
+  height: 50px;
+  fill: black;
+}
+.text-input{
+  border:none;
+  border-bottom: 2px solid black;
+  height: 50px;
+  width: 50px;
+  outline: none;
+  padding-left: 10px
+}
+.submit{
+  padding: 10px 20px;
+  border: 1px solid black;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: 700;
+  transition: all .3s;
+  background-color: white;
+}
+.submit:hover{
+  background-color: black;
+  border: none;
+  color: white;
+}
+.footer{
+  width: 100%;
+  text-align: center;
+  margin-bottom:20px;
+}
+.results{
+  width: 250px;
+  height: 250px;
+  border-radius: 20px;
+  box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.2), 0 6px 20px 0 rgba(0, 0, 0, 0.19);
+  display:flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-evenly
+}

@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% load static %}
+{% block title %} ML {% endblock %}
+{% block content %}
+<div class="content">
+  <img src="{% static 'img/banner.jpg'%}" />
+  <div class="pred">
+    <h1> Predict </h1>
+    <form method="POST" action="" class="inputs">
+      {% csrf_token %}
+      <div class="field-cover">
+        <div class="field">
+          <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-medal"><path d="M7.21 15 2.66 7.14a2 2 0 0 1 .13-2.2L4.4 2.8A2 2 0 0 1 6 2h12a2 2 0 0 1 1.6.8l1.6 2.14a2 2 0 0 1 .14 2.2L16.79 15"/><path d="M11 12 5.12 2.2"/><path d="m13 12 5.88-9.8"/><path d="M8 7h8"/><circle cx="12" cy="17" r="5"/><path d="M12 18v-2h-.5"/></svg>
+          <input type="text" name="wins" placeholder="Wins" class="text-input" />
+        </div>
+
+        <div class="field">
+          <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-handshake"><path d="m11 17 2 2a1 1 0 1 0 3-3"/><path d="m14 14 2.5 2.5a1 1 0 1 0 3-3l-3.88-3.88a3 3 0 0 0-4.24 0l-.88.88a1 1 0 1 1-3-3l2.81-2.81a5.79 5.79 0 0 1 7.06-.87l.47.28a2 2 0 0 0 1.42.25L21 4"/><path d="m21 3 1 11h-2"/><path d="M3 3 2 14l6.5 6.5a1 1 0 1 0 3-3"/><path d="M3 4h8"/></svg>
+          <input type="text" name="draws" placeholder="Draws" class="text-input" />
+        </div>
+
+        <div class="field">
+          <svg xmlns="http://www.w3.org/2000/svg" width="50px" height="50px" viewBox="0 0 24 24" fill="none" stroke="black" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-goal"><path d="M12 13V2l8 4-8 4"/><path d="M20.561 10.222a9 9 0 1 1-12.55-5.29"/><path d="M8.002 9.997a5 5 0 1 0 8.9 2.02"/></svg>
+          <input type="text" name="gd" placeholder="GD" class="text-input" />
+        </div>
+      </div>
+      
+      <input class='submit' type="submit" value="PREDICT" />
+    </form>
+  </div>
+</div>
+<div class="footer">
+  <p>A Machine Learning model that predicts the chances of a team to win the league from Wins, Draws and GoalAggregate in season.</p>
+</div>
+{% endblock %}
