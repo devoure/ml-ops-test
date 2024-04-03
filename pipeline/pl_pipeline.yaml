@@ -36,7 +36,7 @@ deploymentSpec:
           '
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
           \ *\n\ndef load_data():\n    import pandas as pd\n    from minio import\
-          \ Minio\n    import io\n\n    minio_client = Minio(\n        \"192.168.1.95:9000\"\
+          \ Minio\n    import io\n\n    minio_client = Minio(\n        \"192.168.1.29:9000\"\
           ,\n        \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
           ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
           \    thedataset = 'premier-league-tables.csv'\n\n    try:\n        res =\
@@ -62,8 +62,9 @@ deploymentSpec:
         - -c
         - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
           \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
-          \ python3 -m pip install --quiet --no-warn-script-location 'pandas' 'scikit-learn'\
-          \ 'minio' 'kfp' 'numpy' && \"$0\" \"$@\"\n"
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
         - sh
         - -ec
         - 'program_path=$(mktemp -d)
@@ -77,7 +78,7 @@ deploymentSpec:
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
           \ *\n\ndef process_data():\n    import pandas as pd\n    from sklearn.model_selection\
           \ import train_test_split\n    from minio import Minio\n    import io\n\n\
-          \    minio_client = Minio(\n        \"192.168.1.95:9000\",\n        \"01UEi1KBqoAFeN3ANxIK\"\
+          \    minio_client = Minio(\n        \"192.168.1.29:9000\",\n        \"01UEi1KBqoAFeN3ANxIK\"\
           ,\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\",\n        secure=False\n\
           \        )\n\n    bucket_name = 'premier-league'\n    try:\n        res\
           \ = minio_client.get_object(bucket_name, 'data.csv')\n\n    except Exception\
@@ -107,7 +108,7 @@ deploymentSpec:
           \                length=len(y_test_bytes),\n                content_type\
           \ = \"application/csv\"\n                )\n\n    except Exception as err:\n\
           \        print(err)\n\n"
-        image: python:3.11.8-alpine
+        image: devourey/scikit-sandbox:latest
     exec-train-data:
       container:
         args:
@@ -120,8 +121,9 @@ deploymentSpec:
         - -c
         - "\nif ! [ -x \"$(command -v pip)\" ]; then\n    python3 -m ensurepip ||\
           \ python3 -m ensurepip --user || apt-get install python3-pip\nfi\n\nPIP_DISABLE_PIP_VERSION_CHECK=1\
-          \ python3 -m pip install --quiet --no-warn-script-location 'scikit-learn'\
-          \ 'pandas' 'tempfile' 'minio' 'kfp' 'numpy' && \"$0\" \"$@\"\n"
+          \ python3 -m pip install --quiet --no-warn-script-location 'kfp==2.7.0'\
+          \ '--no-deps' 'typing-extensions>=3.7.4,<5; python_version<\"3.9\"' && \"\
+          $0\" \"$@\"\n"
         - sh
         - -ec
         - 'program_path=$(mktemp -d)
@@ -135,7 +137,7 @@ deploymentSpec:
         - "\nimport kfp\nfrom kfp import dsl\nfrom kfp.dsl import *\nfrom typing import\
           \ *\n\ndef train_data():\n    import pandas as pd\n    from sklearn.linear_model\
           \ import LogisticRegression\n    import pickle\n    import tempfile\n  \
-          \  from minio import Minio\n\n    minio_client = Minio(\n        \"192.168.1.95:9000\"\
+          \  from minio import Minio\n\n    minio_client = Minio(\n        \"192.168.1.29:9000\"\
           ,\n        \"01UEi1KBqoAFeN3ANxIK\",\n        \"KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK\"\
           ,\n        secure=False\n        )\n\n    bucket_name = 'premier-league'\n\
           \    try:\n        res_for_X = minio_client.get_object(bucket_name, 'X-train.csv')\n\
@@ -148,7 +150,7 @@ deploymentSpec:
           \ f)\n            f.seek(0)\n            minio_client.put_object(Body=f.read(),\
           \ bucket=bucket_name, key='model.pkl')\n    except Exception as e:\n   \
           \     print(e)\n\n"
-        image: python:3.11.8-alpine
+        image: devourey/scikit-sandbox:latest
 pipelineInfo:
   description: A simple pipeline to automate a machine learning workflow to create
     pl model

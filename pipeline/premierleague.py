@@ -11,7 +11,7 @@ def load_data():
     import io
 
     minio_client = Minio(
-        "192.168.1.95:9000",
+        "192.168.1.29:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
@@ -45,8 +45,7 @@ def load_data():
         print(err)
 
 @component(
-        packages_to_install=["pandas", "scikit-learn", "minio", "kfp", "numpy"],
-        base_image="python:3.11.8-alpine"
+        base_image="devourey/scikit-sandbox:latest"
         )
 def process_data():
     import pandas as pd
@@ -55,7 +54,7 @@ def process_data():
     import io
 
     minio_client = Minio(
-        "192.168.1.95:9000",
+        "192.168.1.29:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
@@ -127,8 +126,7 @@ def process_data():
 
 
 @component(
-        packages_to_install=["scikit-learn", "pandas", "tempfile", "minio", "kfp", "numpy"],
-        base_image="python:3.11.8-alpine"
+        base_image="devourey/scikit-sandbox:latest"
         )
 def train_data():
     import pandas as pd
@@ -138,7 +136,7 @@ def train_data():
     from minio import Minio
 
     minio_client = Minio(
-        "192.168.1.95:9000",
+        "192.168.1.29:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
