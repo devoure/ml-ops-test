@@ -5,7 +5,7 @@ import sklearn
 
 def predict(values):
     minio_client = Minio(
-        "192.168.1.29:9000",
+        "192.168.1.23:9000",
         "01UEi1KBqoAFeN3ANxIK",
         "KXeCpTVnkovXYg1Mi3pSJrOkMlzNe5sbJiHdubxK",
         secure=False
