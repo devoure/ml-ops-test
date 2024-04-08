@@ -4,3 +4,4 @@ minio
 kfp
 numpy
 minio
+mlflow
